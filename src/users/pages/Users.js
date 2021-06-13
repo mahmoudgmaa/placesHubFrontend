@@ -6,7 +6,7 @@ const Users = () => {
 
   return (
     <>
-      <UserList items={users} />
+      <UserList  />
     </>
   );
 };
