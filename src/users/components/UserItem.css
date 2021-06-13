@@ -1,0 +1,23 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap");
+
+html {
+  font-family: "Open Sans", sans-serif;
+}
+body {
+  margin: 0;
+  background: #4d4d4d;
+}
+.card {
+  width: 70%;
+  margin: 5% auto;
+}
+.card-body {
+  padding: 3% 0 !important;
+}
+.card-text {
+  font-size: 0.9rem;
+  padding: 0.4rem 1.9rem;
+}
+#card:hover {
+  box-shadow: 5px 10px 20px 1px rgba(0, 0, 0, 0.253);
+}
