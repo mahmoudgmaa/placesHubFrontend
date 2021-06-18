@@ -3,6 +3,7 @@ import Input from "../components/input";
 import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH } from "../utils/validators.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "../../shared/components/form-hook";
+import {useHttpCleint} from "../../shared/components/http-hook"
 
 const GlobalStyling = createGlobalStyle`
 html{
@@ -51,6 +52,8 @@ export const Button = styled.button`
 `;
 
 const NewPlaces = () => {
+  const { isError, isLoading, error, errorHandler, sendRequset, setIsError } =
+    useHttpCleint();
   const [formState,inputHandler]=useForm(
     {
       title: {
@@ -71,7 +74,16 @@ const NewPlaces = () => {
   
   const submitHandler = (e) => {
     e.preventDefault();
-    console.log(formState.inputs);
+    sendRequset(
+      "http://localhost:4000/api/places",
+      "POST",
+      JSON.stringify({
+        title: formState.inputs.title.value,
+        description: formState.inputs.description.value,
+        address: formState.inputs.address.value,
+      })
+    );
+
   };
   return (
     <>

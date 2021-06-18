@@ -10,6 +10,7 @@ import { useForm } from "../../shared/components/form-hook";
 import { AuthContext } from "../../context/auth-context";
 import * as reactBootstrap from "react-bootstrap";
 import ErrorModal from "../components/ErrorModal";
+import { useHttpCleint } from "../../shared/components/http-hook";
 
 const GlobalStyling = createGlobalStyle`
 html{
@@ -60,9 +61,8 @@ export const Button = styled.button`
 
 const Auth = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isError, setIsError] = useState(false);
+  const { isError, isLoading, error, errorHandler, sendRequset, setIsError } =
+    useHttpCleint();
   const [formState, inputHandler, setFormData] = useForm(
     {
       email: {
@@ -78,56 +78,35 @@ const Auth = () => {
   );
   const SubmitForm = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     if (isLoginMode) {
       try {
-        const response = await fetch("http://localhost:4000/api/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequset(
+          "http://localhost:4000/api/users/login",
+          "POST",
+          JSON.stringify({
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const responseData=await response.json();
-        if(!response.ok){
-          throw new Error(responseData.message);
-        }
-        setIsLoading(false);
+          { "Content-Type": "application/json" }
+        );
         auth.logIn();
-      } catch (error) {
-        setIsError(true);
-        setError(error.message || "something went wrong, please try again");
-        console.log(error);
-        setIsLoading(false);
-      }
+      } catch (error) {}
     } else {
       try {
-        const response = await fetch("http://localhost:4000/api/users/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequset(
+          "http://localhost:4000/api/users/signup",
+          "POST",
+          JSON.stringify({
             name: formState.inputs.name.value,
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message);
-        }
-        setIsLoading(false);
+          {
+            "Content-Type": "application/json",
+          }
+        );
         auth.logIn();
-      } catch (error) {
-        setIsError(true);
-        setError(error.message || "something went wrong, please try again");
-        console.log(error);
-        setIsLoading(false);
-      }
+      } catch (error) {}
     }
   };
   const swichHandler = () => {
@@ -155,11 +134,6 @@ const Auth = () => {
   };
 
   const auth = useContext(AuthContext);
-
-  const errorHandler = () => {
-    setIsError(false);
-    setError(null);
-  };
 
   return (
     <>

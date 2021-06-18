@@ -17,16 +17,20 @@ import { AuthContext } from "./context/auth-context";
 
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState(false);
+
   const toggle = () => {
     setIsOpen(!isOpen);
   };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const logIn = useCallback(() => {
+  const logIn = useCallback((uid) => {
     setIsLoggedIn(true);
+    setUserId(uid);
   }, []);
   const logOut = useCallback(() => {
     setIsLoggedIn(false);
+    setUserId(null);
   }, []);
 
   let routs;
@@ -67,7 +71,7 @@ const App = () => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: isLoggedIn, logIn: logIn, logOut: logOut }}
+      value={{ isLoggedIn: isLoggedIn, logIn: logIn, logOut: logOut,userId:userId }}
     >
       <Router>
         <Sidebar isOpen={isOpen} toggle={toggle} />
