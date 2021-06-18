@@ -80,7 +80,7 @@ const Auth = () => {
     e.preventDefault();
     if (isLoginMode) {
       try {
-        await sendRequset(
+        const data = await sendRequset(
           "http://localhost:4000/api/users/login",
           "POST",
           JSON.stringify({
@@ -89,11 +89,11 @@ const Auth = () => {
           }),
           { "Content-Type": "application/json" }
         );
-        auth.logIn();
+        auth.logIn(data.user.id);
       } catch (error) {}
     } else {
       try {
-        await sendRequset(
+        const data = await sendRequset(
           "http://localhost:4000/api/users/signup",
           "POST",
           JSON.stringify({
@@ -105,7 +105,7 @@ const Auth = () => {
             "Content-Type": "application/json",
           }
         );
-        auth.logIn();
+        auth.logIn(data.user.id);
       } catch (error) {}
     }
   };

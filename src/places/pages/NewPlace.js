@@ -1,9 +1,14 @@
+import { useContext } from "react";
+import { useHistory } from "react-router-dom";
+import { AuthContext } from "../../context/auth-context";
 import styled, { createGlobalStyle } from "styled-components";
 import Input from "../components/input";
 import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH } from "../utils/validators.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "../../shared/components/form-hook";
-import {useHttpCleint} from "../../shared/components/http-hook"
+import { useHttpCleint } from "../../shared/components/http-hook";
+import ErrorModal from "../../users/components/ErrorModal";
+import * as reactBootstrap from "react-bootstrap";
 
 const GlobalStyling = createGlobalStyle`
 html{
@@ -52,9 +57,10 @@ export const Button = styled.button`
 `;
 
 const NewPlaces = () => {
+  const auth = useContext(AuthContext);
   const { isError, isLoading, error, errorHandler, sendRequset, setIsError } =
     useHttpCleint();
-  const [formState,inputHandler]=useForm(
+  const [formState, inputHandler] = useForm(
     {
       title: {
         value: "",
@@ -71,22 +77,40 @@ const NewPlaces = () => {
     },
     false
   );
-  
-  const submitHandler = (e) => {
-    e.preventDefault();
-    sendRequset(
-      "http://localhost:4000/api/places",
-      "POST",
-      JSON.stringify({
-        title: formState.inputs.title.value,
-        description: formState.inputs.description.value,
-        address: formState.inputs.address.value,
-      })
-    );
 
+  const history = useHistory();
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      await sendRequset(
+        "http://localhost:4000/api/places",
+        "POST",
+        JSON.stringify({
+          headline: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+          address: formState.inputs.address.value,
+          creatorid: auth.userId,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      history.push("/");
+    } catch (error) {}
   };
   return (
     <>
+      {isError && (
+        <ErrorModal
+          showModal={isError}
+          setShowModal={setIsError}
+          header={"something went wrong"}
+          body={error}
+          buttonText={"cancel"}
+          oncancel={errorHandler}
+        />
+      )}
       <GlobalStyling />
       <FormWrapper>
         <Form onSubmit={submitHandler}>
@@ -116,6 +140,7 @@ const NewPlaces = () => {
             validators={[VALIDATOR_MINLENGTH(5)]}
             onInput={inputHandler}
           />
+          {isLoading && <reactBootstrap.Spinner animation="grow" />}
           <Button type="submit" disabled={!formState.isValid}>
             Add place
           </Button>
