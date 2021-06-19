@@ -20,7 +20,7 @@ const Navbar = ({ toggle }) => {
           </li>
           {auth.isLoggedIn && (
             <li>
-              <NavLink to="/u1/places" activeStyle>
+              <NavLink to={"/"+auth.userId+"/places"} activeStyle>
                 MY PLACES
               </NavLink>
             </li>

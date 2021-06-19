@@ -2,6 +2,9 @@ import React, { useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
 import { MdClose } from "react-icons/md";
 import { useSpring, animated } from "react-spring";
+import { useHttpCleint } from "../../shared/components/http-hook";
+import ErrorModal from "../../users/components/ErrorModal";
+import * as reactBootstrap from "react-bootstrap";
 
 const Button = styled.button`
   background: red;
@@ -76,7 +79,9 @@ const ModalContent = styled.div`
   padding: 10px;
 `;
 
-const ModalCancel = ({ showModal, setShowModal }) => {
+const ModalCancel = ({ showModal, setShowModal, placeid, onDelete }) => {
+  const { isError, isLoading, error, errorHandler, sendRequset, setIsError } =
+    useHttpCleint();
   const animation = useSpring({
     config: {
       duration: 100,
@@ -106,12 +111,28 @@ const ModalCancel = ({ showModal, setShowModal }) => {
     return () => document.removeEventListener("keydown", keyPress);
   }, []);
 
-
-  const handleClickButton=()=>{
-      setShowModal(false);
-  }
+  const handleClickButton = async () => {
+    setShowModal(false);
+    try {
+      await sendRequset(
+        `http://localhost:4000/api/places/${placeid}`,
+        "DELETE"
+      );
+      onDelete(placeid);
+    } catch (error) {}
+  };
   return (
     <>
+      {!isLoading && isError && (
+        <ErrorModal
+          showModal={isError}
+          setShowModal={setIsError}
+          header={"something went wrong"}
+          body={error}
+          buttonText={"cancel"}
+          oncancel={errorHandler}
+        />
+      )}
       {showModal ? (
         <Background ref={ModalRef} onClick={handleClick}>
           <animated.div style={animation}>
@@ -128,6 +149,7 @@ const ModalCancel = ({ showModal, setShowModal }) => {
                   be undone){" "}
                 </p>
                 <Button onClick={handleClickButton}>Delete</Button>
+                {isLoading && <reactBootstrap.Spinner animation="grow" />}
               </ModalContent>
             </ModalWrapper>
           </animated.div>

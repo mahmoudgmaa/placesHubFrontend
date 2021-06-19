@@ -1,8 +1,7 @@
 import React from "react";
 import UserItem from "./UserItem";
-import "./UserList.css" 
+import "./UserList.css";
 import styled from "styled-components";
-
 
 const Card = styled.div`
   margin: 0;
@@ -15,7 +14,7 @@ const Card = styled.div`
 
 const Wrapper = styled.ul`
   list-style: none;
-  margin:0 auto;
+  margin: 0 auto;
   padding: 0;
   width: 90%;
   max-width: 50rem;
@@ -24,32 +23,30 @@ const Wrapper = styled.ul`
   flex-wrap: wrap;
 `;
 
-
-
-const UserList=(props)=>{
-    if(props.items.length===0){
-        return (
-          <Card>
-            <h2>No users found</h2>
-          </Card>
-        );
-    }
+const UserList = (props) => {
+  if (props.items.length === 0) {
     return (
-      <Wrapper>
-        {props.items.map((user) => {
-          return (
-            <div className="col-md-4">
-              <UserItem
-                key={user.id}
-                id={user.id}
-                image={user.image}
-                name={user.name}
-                placeCounter={user.placeCounter}
-              />
-            </div>
-          );
-        })}
-      </Wrapper>
+      <Card>
+        <h2>No users found</h2>
+      </Card>
     );
-}
+  }
+  return (
+    <Wrapper>
+      {props.items.map((user, index) => {
+        return (
+          <div className="col-md-4" key={index}>
+            <UserItem
+              key={user.id}
+              id={user.id}
+              image={user.image}
+              name={user.name}
+              placeCounter={user.placeCounter}
+            />
+          </div>
+        );
+      })}
+    </Wrapper>
+  );
+};
 export default UserList;

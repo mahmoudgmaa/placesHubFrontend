@@ -31,9 +31,9 @@ const Users = () => {
           oncancel={errorHandler}
         />
       )}
-      {isLoading && <reactBootstrap.Spinner animation="grow" />}
 
       {!isLoading && users && <UserList items={users} />}
+      {isLoading && <reactBootstrap.Spinner animation="grow" />}
     </>
   );
 };

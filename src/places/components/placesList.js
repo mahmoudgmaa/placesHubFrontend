@@ -69,11 +69,12 @@ const placesList = (props) => {
             headline={place.headline}
             description={place.description}
             address={place.address}
-            creatorid={place.creator}
+            creatorid={place.creatorid}
             coordinates={place.coordinates}
             onCustomEvent={props.onCustomEvent}
             setShowModal={props.setShowModal}
             showModal={props.showModal}
+            onDelete={props.onDeletePlace}
           />
         );
       })}

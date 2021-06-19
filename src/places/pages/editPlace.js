@@ -1,60 +1,22 @@
-import React, { useEffect, useState } from "react";
-import img from "../../assests/download.jpg";
-import img1 from "../../assests/download1.jpg";
-import img2 from "../../assests/download2.jpg";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, useHistory } from "react-router-dom";
 import Input from "../components/input";
 import { Form, FormWrapper, Button } from "./NewPlace";
 import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH } from "../utils/validators";
 import { useForm } from "../../shared/components/form-hook";
-
-const items = [
-  {
-    id: "p1",
-    img: img,
-    headline: "mosque",
-    address: "Istanbul, Turkey",
-    description:
-      "is an Ottoman-era friday mosque located in Istanbul, Turkey. A functioning mosque, it also attracts large numbers of tourist visitors",
-    coordinates: {
-      lat: 41.0054096,
-      lng: 28.9746251,
-    },
-    creatorid: "u1",
-  },
-
-  {
-    id: "p2",
-    img: img1,
-    headline: "bridge",
-    address: "Istanbul, Turkey",
-    description:
-      "is an Ottoman-era friday mosque located in Istanbul, Turkey. A functioning mosque, it also attracts large numbers of tourist visitors",
-    coordinates: {
-      lat: 41.0054096,
-      lng: 28.9746251,
-    },
-    creatorid: "u2",
-  },
-
-  {
-    id: "p3",
-    img: img2,
-    headline: "mountain",
-    address: "Istanbul, Turkey",
-    description:
-      "is an Ottoman-era friday mosque located in Istanbul, Turkey. A functioning mosque, it also attracts large numbers of tourist visitors",
-    coordinates: {
-      lat: 41.0054096,
-      lng: 28.9746251,
-    },
-    creatorid: "u3",
-  },
-];
+import { useHttpCleint } from "../../shared/components/http-hook";
+import ErrorModal from "../../users/components/ErrorModal";
+import * as reactBootstrap from "react-bootstrap";
+import { AuthContext } from "../../context/auth-context";
 
 const EditPlace = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const { isError, isLoading, error, errorHandler, sendRequset, setIsError } =
+    useHttpCleint();
+  const [loadedPlace, setLoadedPlace] = useState();
   const placeid = useParams().placeid;
+  const history = useHistory();
+  const auth = useContext(AuthContext);
+
   const [formState, inputHandler, setFormData] = useForm(
     {
       title: {
@@ -69,84 +31,102 @@ const EditPlace = () => {
     false
   );
 
-  const identicalPlace = items.find((p) => p.id === placeid);
-
-  useEffect(() => {
-    if (identicalPlace) {
+  const fetchPlace = async () => {
+    try {
+      const responseDate = await sendRequset(
+        `http://localhost:4000/api/places/${placeid}`
+      );
+      setLoadedPlace(responseDate.place);
       setFormData(
         {
           title: {
-            value: identicalPlace.headline,
+            value: responseDate.place.headline,
             isValid: true,
           },
           description: {
-            value: identicalPlace.description,
+            value: responseDate.place.description,
             isValid: true,
           },
         },
         true
       );
-    }
+    } catch (error) {}
+  };
 
-    setIsLoading(false);
-  }, [setFormData, identicalPlace]);
-
-  if (!identicalPlace) {
+  useEffect(() => {
+    fetchPlace();
+  }, [sendRequset, placeid, setFormData]);
+  if (isLoading) {
+    return <reactBootstrap.Spinner animation="grow" />;
+  }
+  if (!loadedPlace && !isError) {
     return (
       <div>
         <h3>no place found!</h3>
       </div>
     );
   }
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(formState.inputs);
+    try {
+      await sendRequset(
+        `http://localhost:4000/api/places/${placeid}`,
+        "PATCH",
+        JSON.stringify({
+          headline: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+      history.push("/"+auth.userId+"/places")
+    } catch (error) {}
   };
 
-  if (isLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          height: "100vh",
-        }}>
-        <h2 style={{ color: "black" }}>loading...</h2>
-      </div>
-    );
-  }
-
   return (
-    <FormWrapper>
-      <Form onSubmit={submitHandler}>
-        <Input
-          id="title"
-          element="input"
-          type="text"
-          label="Title"
-          errorText="please enter valid Title"
-          validators={[VALIDATOR_REQUIRE()]}
-          value={formState.inputs.title.value}
-          valid={formState.inputs.title.isValid}
-          onInput={inputHandler}
+    <>
+      {!isLoading && isError && (
+        <ErrorModal
+          showModal={isError}
+          setShowModal={setIsError}
+          header={"something went wrong"}
+          body={error}
+          buttonText={"cancel"}
+          oncancel={errorHandler}
         />
-        <Input
-          id="description"
-          element="textarea"
-          label="Description"
-          errorText="please enter valid description(at least 5 characters)"
-          validators={[VALIDATOR_MINLENGTH(5)]}
-          value={formState.inputs.description.value}
-          valid={formState.inputs.description.isValid}
-          onInput={inputHandler}
-        />
-        <Button type="submit" disabled={!formState.isValid}>
-          Update place
-        </Button>
-      </Form>
-    </FormWrapper>
+      )}
+      {!isLoading && loadedPlace && (
+        <FormWrapper>
+          <Form onSubmit={submitHandler}>
+            <Input
+              id="title"
+              element="input"
+              type="text"
+              label="Title"
+              errorText="please enter valid Title"
+              validators={[VALIDATOR_REQUIRE()]}
+              value={loadedPlace.headline}
+              valid={true}
+              onInput={inputHandler}
+            />
+            <Input
+              id="description"
+              element="textarea"
+              label="Description"
+              errorText="please enter valid description(at least 5 characters)"
+              validators={[VALIDATOR_MINLENGTH(5)]}
+              value={loadedPlace.description}
+              valid={true}
+              onInput={inputHandler}
+            />
+            <Button type="submit" disabled={!formState.isValid}>
+              Update place
+            </Button>
+          </Form>
+        </FormWrapper>
+      )}
+    </>
   );
 };
 

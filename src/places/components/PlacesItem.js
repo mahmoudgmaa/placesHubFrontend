@@ -30,7 +30,12 @@ const PlacesItem = (props) => {
 
   return (
     <>
-      <ModalCancel showModal={showModal} setShowModal={setShowModal} />
+      <ModalCancel
+        onDelete={props.onDelete}
+        placeid={props.id}
+        showModal={showModal}
+        setShowModal={setShowModal}
+      />
       <PlaceContainer>
         <ImgWrapper>
           <img src={props.img} alt="place_img" />
@@ -42,7 +47,7 @@ const PlacesItem = (props) => {
         </BodyWrapper>
         <ButtonWrapper>
           <Button onClick={(e) => handleClick(e)}>VIEW ON MAP</Button>
-          {auth.isLoggedIn && (
+          {auth.userId === props.creatorid && (
             <>
               <Button to={"/places/" + props.id}>EDIT</Button>
               <Button onClick={() => setShowModal(true)}>DELETE</Button>
